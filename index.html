@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>他</title>
+<style>
+  body { background: #1e1c19; color: #e9e2d4; font: 17px/1.8 "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; margin: 0; }
+  #wrap { max-width: 640px; margin: 0 auto; padding: 24px 18px 80px; }
+  h1 { font-size: 22px; letter-spacing: 6px; margin: 4px 0 18px; font-weight: normal; color: #d8c08a; }
+  .season { color: #d8c08a; margin: 22px 0 4px; }
+  .old { color: #8f877a; }
+  p { margin: 3px 0; }
+  #opts { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
+  button { text-align: left; background: #2c2924; color: #e9e2d4; border: 1px solid #5a5347; border-radius: 4px; padding: 6px 12px; font: inherit; font-size: 16px; cursor: pointer; }
+  button:hover { background: #3a362f; border-color: #8a7f68; }
+  table { border-collapse: collapse; margin: 10px 0; font-size: 15px; width: 100%; }
+  td { padding: 3px 6px; border-bottom: 1px solid #3a362f; vertical-align: top; }
+  td.w { color: #d8c08a; white-space: nowrap; }
+  .blood { color: #d9826f; }
+  #again { margin-top: 24px; }
+  #foot { margin-top: 40px; font-size: 13px; color: #6f685c; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <h1>他</h1>
+  <div id="log"></div>
+  <div id="opts"></div>
+  <div id="foot"></div>
+</div>
+<script src="ta.js"></script>
+<script>
+(function () {
+  var logEl = document.getElementById('log'), optsEl = document.getElementById('opts');
+  var s;
+  function para(text, cls) {
+    var p = document.createElement('p'); p.textContent = text; if (cls) p.className = cls; logEl.appendChild(p); return p;
+  }
+  function dimOld() {
+    var ps = logEl.querySelectorAll('p, div.season');
+    for (var k = 0; k < ps.length; k++) ps[k].classList.add('old');
+  }
+  function showHead() {
+    var h = TA.head(s);
+    var d = document.createElement('div'); d.className = 'season'; d.textContent = h.title; logEl.appendChild(d);
+    h.lines.forEach(function (l) { para(l); });
+    optsEl.innerHTML = '';
+    h.opts.forEach(function (o) {
+      var b = document.createElement('button'); b.textContent = o.text;
+      b.onclick = function () { pick(o.k); };
+      optsEl.appendChild(b);
+    });
+  }
+  function pick(k) {
+    dimOld();
+    var r = TA.step(s, k);
+    if (!r) return;
+    optsEl.innerHTML = '';
+    r.forEach(function (l) { para(l); });
+    if (s.g <= 0 || s.i >= 8) { end(); } else { showHead(); }
+    window.scrollTo(0, document.body.scrollHeight);
+  }
+  function end() {
+    var w = TA.window(s);
+    var d = document.createElement('div'); d.className = 'season'; d.textContent = '—— 那天晚上 ——'; logEl.appendChild(d);
+    w.forEach(function (l) { para(l, s.end === '血' && /血|金屑|等他/.test(l) ? 'blood' : ''); });
+    var L = TA.ledger(s);
+    var d2 = document.createElement('div'); d2.className = 'season'; d2.textContent = '—— 这两年 ——'; logEl.appendChild(d2);
+    var tb = document.createElement('table');
+    var hr = tb.insertRow(); ['', '你', '他带回来', '他进门'].forEach(function (x) { var c = hr.insertCell(); c.textContent = x; c.className = 'w'; });
+    L.rows.forEach(function (r) {
+      var tr = tb.insertRow();
+      [r.when, r.you, r.got, r.face].forEach(function (x, j) { var c = tr.insertCell(); c.textContent = x; if (j === 0) c.className = 'w'; });
+    });
+    logEl.appendChild(tb);
+    if (L.last) para(L.last);
+    document.getElementById('foot').textContent = '从都德《磨坊书简》里的《金脑子的人》来。';
+    var b = document.createElement('button'); b.id = 'again'; b.textContent = '再过一回';
+    b.onclick = start; optsEl.appendChild(b);
+  }
+  function start() {
+    logEl.innerHTML = ''; optsEl.innerHTML = ''; document.getElementById('foot').textContent = '';
+    s = TA.fresh();
+    para('你跟他刚住到一起。他什么都依着你，从不说不。');
+    showHead();
+    window.scrollTo(0, 0);
+  }
+  start();
+})();
+</script>
+</body>
+</html>
